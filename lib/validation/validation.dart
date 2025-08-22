@@ -1,5 +1,3 @@
-// lib/validation/validation.dart
-
 
 class InputValidation {
   /// Verifica si la palabra ya existe en la lista
