@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:namer_app/routes/page.dart';
+import 'package:namer_app/veterinaria/controllers/veterinario_controller.dart';
 import 'routes/routes.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'auth/controller/auth_controller.dart';
 
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
-void main() {
+  Get.put(AuthController());
+
+  await crearVeterinariosPorDefecto();
+
   runApp(MyApp());
 }
 
@@ -12,14 +21,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Namer App',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-      ),
+      title: 'Mi App',
+      debugShowCheckedModeBanner: false,
       getPages: AppPages.pages,
-      initialRoute: AppRoutes.home,
+      initialRoute: AppRoutes.login,
     );
   }
 }
-
