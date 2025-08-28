@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../validation/validation.dart';
+
+import '../../core/validation/validation.dart';
 import '../controller/auth_controller.dart';
 
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:namer_app/validation/validation.dart';
+
+import '../../../core/validation/validation.dart';
 import '../controller/home_controller.dart';
 
 class GeneratorPage extends StatelessWidget {

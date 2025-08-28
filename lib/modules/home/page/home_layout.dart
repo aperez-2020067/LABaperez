@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../auth/controller/auth_controller.dart';
-import '../../veterinaria/page/cita_page.dart';
-import '../../veterinaria/page/mascotacontroller_form_page.dart';
+
+import '../../../auth/controller/auth_controller.dart';
+import '../../../data/veterinaria/page/cita_page.dart';
+import '../../../data/veterinaria/page/mascotacontroller_form_page.dart';
 import 'home_page.dart';
 
 class HomeLayout extends StatefulWidget {

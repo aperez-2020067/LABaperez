@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:namer_app/validation/validation.dart';
+import '../../../core/validation/validation.dart';
+
+
+
 
 class HomeController extends GetxController {
   var current = ''.obs;
