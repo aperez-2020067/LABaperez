@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:namer_app/routes/routes.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
@@ -28,15 +29,15 @@ class AuthController extends GetxController {
   // Lógica que decide si enviar al login, home o perfil
   void _setInitialScreen(User? user) async {
     if (user == null) {
-      Get.offAllNamed('/login');
+      Get.offAllNamed(AppRoutes.login);
     } else {
       final dbRef = FirebaseDatabase.instance.ref().child('usuarios/${user.uid}');
       final snapshot = await dbRef.get();
 
       if (snapshot.exists) {
-        Get.offAllNamed('/home');
+        Get.offAllNamed(AppRoutes.home);
       } else {
-        Get.offAllNamed('/perfil');
+        Get.offAllNamed(AppRoutes.perfil);
       }
     }
   }
