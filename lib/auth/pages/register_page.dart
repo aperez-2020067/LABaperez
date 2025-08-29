@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../core/validation/validation.dart';
 import '../controller/auth_controller.dart';
 
 
-
-
 class RegisterPage extends StatelessWidget {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
   final authController = Get.find<AuthController>();
 
   @override
@@ -43,16 +38,16 @@ class RegisterPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 30),
-                _buildTextField(emailController, 'Correo electrónico', Icons.email, false),
+                _buildTextField(authController.emailController, 'Correo electrónico', Icons.email, false),
                 SizedBox(height: 20),
-                _buildTextField(passwordController, 'Contraseña', Icons.lock, true),
+                _buildTextField(authController.passwordController, 'Contraseña', Icons.lock, true),
                 SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                       onPressed: () {
-                        final email = emailController.text.trim();
-                        final password = passwordController.text.trim();
+                        final email = authController.emailController.text.trim();
+                        final password = authController.passwordController.text.trim();
 
                         if (!Validators.isValidEmail(email)) {
                           Get.snackbar('Correo inválido', 'Introduce un correo electrónico válido');

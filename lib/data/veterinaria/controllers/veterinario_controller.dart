@@ -1,34 +1,37 @@
 import 'package:firebase_database/firebase_database.dart';
+
 import '../models/veterinario_model.dart';
 
-Future<void> crearVeterinariosPorDefecto() async {
+
+Future<void> createDefaultVeterinarians() async {
   final ref = FirebaseDatabase.instance.ref().child('veterinarios');
 
-  // Lista de veterinarios por defecto
-  final List<Veterinario> veterinarios = [
-    Veterinario(
+  // Default list of veterinarians
+  final List<Veterinarian> veterinarians = [
+    Veterinarian(
       id: 'vet001',
-      nombre: 'Dr. Ana Gómez',
-      especialidad: 'Cirugía',
+      name: 'Dr. Ana Gómez',
+      specialty: 'Cirugía',
       email: 'ana.gomez@vetclinic.com',
     ),
-    Veterinario(
+    Veterinarian(
       id: 'vet002',
-      nombre: 'Dr. Carlos Pérez',
-      especialidad: 'Dermatología',
+      name: 'Dr. Carlos Pérez',
+      specialty: 'Dermatología',
       email: 'carlos.perez@vetclinic.com',
     ),
-    Veterinario(
+    Veterinarian(
       id: 'vet003',
-      nombre: 'Dra. Laura Ruiz',
-      especialidad: 'Medicina interna',
+      name: 'Dra. Laura Ruiz',
+      specialty: 'Medicina interna',
       email: 'laura.ruiz@vetclinic.com',
     ),
   ];
 
-  for (final vet in veterinarios) {
+  for (final vet in veterinarians) {
     await ref.child(vet.id).set(vet.toJson());
   }
 
-  print('Veterinarios por defecto insertados correctamente');
+  print('Default veterinarians inserted successfully');
 }
+

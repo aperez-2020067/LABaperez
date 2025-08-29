@@ -12,7 +12,7 @@ void main() async {
 
   Get.put(AuthController());
 
-  await crearVeterinariosPorDefecto();
+  await createDefaultVeterinarians();
 
   runApp(MyApp());
 }

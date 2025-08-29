@@ -24,10 +24,10 @@ class _HomeLayoutState extends State<HomeLayout> {
         page = GeneratorPage(); // Página principal
         break;
       case 1:
-        page = CitaPage(); // Página de citas
+        page = AppointmentPage(); // Página de citas
         break;
       case 2:
-        page = MascotaScreenUnica(); // Página de mascotas
+        page = SinglePetScreen(); // Página de mascotas
         break;
       default:
         page = GeneratorPage();

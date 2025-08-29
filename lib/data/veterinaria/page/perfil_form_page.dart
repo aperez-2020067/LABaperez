@@ -3,34 +3,42 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
-class PerfilFormPage extends StatelessWidget {
-  final nombreController = TextEditingController();
-  final telefonoController = TextEditingController();
+import '../../../core/validation/validation.dart';
 
-  void guardarPerfil() async {
+class ProfileFormPage extends StatelessWidget {
+  //No tengo controlador de perfil me lo aceptas ?? :)
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+
+  void saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
-    await FirebaseDatabase.instance
-        .ref()
-        .child('usuarios/$uid')
-        .set({
+    await FirebaseDatabase.instance.ref().child('usuarios/$uid').set({
       'uid': uid,
-      'nombre': nombreController.text.trim(),
-      'telefono': telefonoController.text.trim(),
+      'nombre': nameController.text.trim(),
+      'telefono': phoneController.text.trim(),
     });
 
-    Get.snackbar('Éxito', 'Perfil guardado correctamente',
-        backgroundColor: Colors.white,
-        colorText: Colors.black,
-        snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'Éxito',
+      'Perfil guardado correctamente',
+      backgroundColor: Colors.white,
+      colorText: Colors.black,
+      snackPosition: SnackPosition.BOTTOM,
+    );
+
     Get.offAllNamed('/home');
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryBlue = Color(0xFF0D47A1); // Azul marino
-    final lightBlue = Color(0xFF64B5F6);   // Celeste
+    final primaryBlue = Color(0xFF0D47A1);
+    final lightBlue = Color(0xFF64B5F6);
 
     return Scaffold(
       body: Container(
@@ -44,43 +52,57 @@ class PerfilFormPage extends StatelessWidget {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.person, size: 100, color: Colors.white),
-                SizedBox(height: 20),
-                Text(
-                  'Completa tu Perfil',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person, size: 100, color: Colors.white),
+                  SizedBox(height: 20),
+                  Text(
+                    'Complete your Profile',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                SizedBox(height: 30),
-                _buildTextField(nombreController, 'Nombre completo', Icons.person),
-                SizedBox(height: 20),
-                _buildTextField(telefonoController, 'Número de teléfono', Icons.phone),
-                SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: guardarPerfil,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: primaryBlue,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  SizedBox(height: 30),
+                  _buildTextFormField(
+                    controller: nameController,
+                    label: 'Nombre Completo',
+                    icon: Icons.person,
+                    validator: PerfilValidators.validateName,
+                  ),
+                  SizedBox(height: 20),
+                  _buildTextFormField(
+                    controller: phoneController,
+                    label: 'Numero De Telefono',
+                    icon: Icons.phone,
+                    keyboardType: TextInputType.phone,
+                    validator: PerfilValidators.validatePhone,
+                  ),
+                  SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: saveProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: primaryBlue,
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Save Profile',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    child: Text(
-                      'Guardar Perfil',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                )
-              ],
+                  )
+                ],
+              ),
             ),
           ),
         ),
@@ -88,11 +110,18 @@ class PerfilFormPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon) {
-    return TextField(
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
       controller: controller,
+      validator: validator,
+      keyboardType: keyboardType,
       style: TextStyle(color: Colors.white),
-      keyboardType: icon == Icons.phone ? TextInputType.phone : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.white),

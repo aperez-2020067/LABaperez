@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/validation/validation.dart';
 import '../controller/auth_controller.dart';
 
+
 class LoginPage extends StatelessWidget {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
   final authController = Get.find<AuthController>();
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    final primaryBlue = Color(0xFF0D47A1); // Azul marino
-    final lightBlue = Color(0xFF64B5F6); // Celeste
+    final primaryBlue = Color(0xFF0D47A1);
+    final lightBlue = Color(0xFF64B5F6);
 
     return Scaffold(
       body: Container(
@@ -24,59 +26,76 @@ class LoginPage extends StatelessWidget {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.lock_outline, size: 100, color: Colors.white),
-                SizedBox(height: 20),
-                Text(
-                  'Bienvenido',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.lock_outline, size: 100, color: Colors.white),
+                  SizedBox(height: 20),
+                  Text(
+                    'Bienvenido',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                SizedBox(height: 30),
-                _buildTextField(emailController, 'Correo electrónico', Icons.email, false),
-                SizedBox(height: 20),
-                _buildTextField(passwordController, 'Contraseña', Icons.lock, true),
-                SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      authController.login(
-                        emailController.text.trim(),
-                        passwordController.text.trim(),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.white,
-                      foregroundColor: primaryBlue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  SizedBox(height: 30),
+                  _buildTextFormField(
+                    controller: authController.emailController,
+                    label: 'Correo electrónico',
+                    icon: Icons.email,
+                    obscure: false,
+                    validator: Validators.emailValidator,
+                  ),
+                  SizedBox(height: 20),
+                  _buildTextFormField(
+                    controller: authController.passwordController,
+                    label: 'Contraseña',
+                    icon: Icons.lock,
+                    obscure: true,
+                    validator: Validators.passwordValidator,
+                  ),
+                  SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          authController.login(
+                            authController.emailController.text.trim(),
+                            authController.passwordController.text.trim(),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: Colors.white,
+                        foregroundColor: primaryBlue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Ingresar',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+                  ),
+                  SizedBox(height: 15),
+                  TextButton(
+                    onPressed: () => Get.toNamed('/register'),
                     child: Text(
-                      'Ingresar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      '¿No tienes cuenta? Regístrate',
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
-                ),
-                SizedBox(height: 15),
-                TextButton(
-                  onPressed: () => Get.toNamed('/register'),
-                  child: Text(
-                    '¿No tienes cuenta? Regístrate',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -84,16 +103,18 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(
-      TextEditingController controller,
-      String label,
-      IconData icon,
-      bool obscure,
-      ) {
-    return TextField(
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool obscure,
+    required String? Function(String?) validator,
+  }) {
+    return TextFormField(
       controller: controller,
       obscureText: obscure,
       style: TextStyle(color: Colors.white),
+      validator: validator,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.white),

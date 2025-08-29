@@ -1,27 +1,27 @@
-class Veterinario {
+class Veterinarian {
   final String id;
-  final String nombre;
-  final String especialidad;
+  final String name;
+  final String specialty;
   final String email;
 
-  Veterinario({
+  Veterinarian({
     required this.id,
-    required this.nombre,
-    required this.especialidad,
+    required this.name,
+    required this.specialty,
     required this.email,
   });
 
-  factory Veterinario.fromJson(Map<String, dynamic> json) => Veterinario(
+  factory Veterinarian.fromJson(Map<String, dynamic> json) => Veterinarian(
     id: json['id'],
-    nombre: json['nombre'],
-    especialidad: json['especialidad'],
+    name: json['nombre'],
+    specialty: json['especialidad'],
     email: json['email'],
   );
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'nombre': nombre,
-    'especialidad': especialidad,
+    'nombre': name,
+    'especialidad': specialty,
     'email': email,
   };
 }

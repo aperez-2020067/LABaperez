@@ -11,9 +11,9 @@ class AppPages {
   static final pages = [
     GetPage(name: AppRoutes.login, page: () => LoginPage()),
     GetPage(name: AppRoutes.register, page: () => RegisterPage()),
-    GetPage(name: AppRoutes.perfil, page: () => PerfilFormPage()),
-    GetPage(name: AppRoutes.mascotas, page: () => MascotaScreenUnica()),
-    GetPage(name: AppRoutes.citas, page: () => CitaPage()),
+    GetPage(name: AppRoutes.perfil, page: () => ProfileFormPage()),
+    GetPage(name: AppRoutes.mascotas, page: () => SinglePetScreen()),
+    GetPage(name: AppRoutes.citas, page: () => AppointmentPage()),
     GetPage(name: AppRoutes.home, page: () => HomeLayout()),
 
 

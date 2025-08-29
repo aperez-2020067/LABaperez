@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -5,6 +6,8 @@ import 'package:namer_app/routes/routes.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late Rx<User?> firebaseUser;
@@ -86,10 +89,29 @@ class AuthController extends GetxController {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       _setInitialScreen(_auth.currentUser);
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Error al iniciar sesión';
+
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No existe un usuario con ese correo';
+          break;
+        case 'wrong-password':
+          errorMessage = 'Contraseña incorrecta';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Correo inválido';
+          break;
+        default:
+          errorMessage = e.message ?? errorMessage;
+      }
+
+      Get.snackbar('Error', errorMessage);
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', 'Error desconocido: ${e.toString()}');
     }
   }
+
 
   // Cerrar sesión
   Future<void> logout() async {

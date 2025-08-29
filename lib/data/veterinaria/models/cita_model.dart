@@ -1,35 +1,31 @@
-class Cita {
+class Appointment {
   final String id;
-  final String fecha;
-  final String hora;
-  final String mascotaId;
-  final String veterinarioId;
-  final String motivo;
+  final DateTime dateTime;
+  final String petId;
+  final String veterinarianId;
+  final String reason;
 
-  Cita({
+  Appointment({
     required this.id,
-    required this.fecha,
-    required this.hora,
-    required this.mascotaId,
-    required this.veterinarioId,
-    required this.motivo,
+    required this.dateTime,
+    required this.petId,
+    required this.veterinarianId,
+    required this.reason,
   });
 
-  factory Cita.fromJson(Map<String, dynamic> json) => Cita(
+  factory Appointment.fromJson(Map<String, dynamic> json) => Appointment(
     id: json['id'],
-    fecha: json['fecha'],
-    hora: json['hora'],
-    mascotaId: json['mascotaId'],
-    veterinarioId: json['veterinarioId'],
-    motivo: json['motivo'],
+    dateTime: DateTime.parse(json['fechaHora']),
+    petId: json['mascotaId'],
+    veterinarianId: json['veterinarioId'],
+    reason: json['motivo'],
   );
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'fecha': fecha,
-    'hora': hora,
-    'mascotaId': mascotaId,
-    'veterinarioId': veterinarioId,
-    'motivo': motivo,
+    'fechaHora': dateTime.toIso8601String(),
+    'mascotaId': petId,
+    'veterinarioId': veterinarianId,
+    'motivo': reason,
   };
 }

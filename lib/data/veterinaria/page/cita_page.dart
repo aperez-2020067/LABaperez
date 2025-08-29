@@ -1,137 +1,241 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
-
+import 'package:intl/intl.dart';
+import '../../../core/validation/validation.dart';
 import '../controllers/cita_controller.dart';
 import '../models/cita_model.dart';
 
-class CitaPage extends StatelessWidget {
-  final controller = Get.put(CitaController());
-
-  final fechaController = TextEditingController();
-  final horaController = TextEditingController();
-  final motivoController = TextEditingController();
+class AppointmentPage extends StatelessWidget {
+  final controller = Get.put(AppointmentController());
+  final Rx<Appointment?> editingAppointment = Rx<Appointment?>(null);
+  final selectedDateTime = Rxn<DateTime>();
+  final reasonController = TextEditingController();
+  final RxString selectedPet = ''.obs;
+  final RxString selectedVet = ''.obs;
 
   final uuid = Uuid();
 
-  final RxString mascotaSeleccionada = ''.obs;
-  final RxString veterinarioSeleccionado = ''.obs;
+  void _openDateTimePicker(BuildContext context) async {
+    final now = DateTime.now();
 
-  void mostrarFormulario({Cita? citaExistente}) {
-    final primaryBlue = Color(0xFF0D47A1);
+    final date = await showDatePicker(
+      context: context,
+      initialDate: selectedDateTime.value ?? now,
+      firstDate: now,
+      lastDate: DateTime(now.year + 2),
+    );
 
-    if (citaExistente != null) {
-      fechaController.text = citaExistente.fecha;
-      horaController.text = citaExistente.hora;
-      motivoController.text = citaExistente.motivo;
-      mascotaSeleccionada.value = citaExistente.mascotaId;
-      veterinarioSeleccionado.value = citaExistente.veterinarioId;
+    if (date != null) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: selectedDateTime.value != null
+            ? TimeOfDay.fromDateTime(selectedDateTime.value!)
+            : TimeOfDay.now(),
+      );
+
+      if (time != null) {
+        final selected = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          time.hour,
+          time.minute,
+        );
+        selectedDateTime.value = selected;
+      }
+    }
+  }
+
+  void _showForm(BuildContext context, {Appointment? appoitment}) {
+    final primaryBlue = const Color(0xFF0D47A1);
+
+    if (appoitment != null) {
+      // Modo edición
+      editingAppointment.value = appoitment;
+      selectedDateTime.value = appoitment.dateTime;
+      reasonController.text = appoitment.reason;
+      selectedPet.value = appoitment.petId;
+      selectedVet.value = appoitment.veterinarianId;
     } else {
-      fechaController.clear();
-      horaController.clear();
-      motivoController.clear();
-      mascotaSeleccionada.value = '';
-      veterinarioSeleccionado.value = '';
+      // Modo nuevo
+      editingAppointment.value = null;
+      selectedDateTime.value = null;
+      reasonController.clear();
+      selectedPet.value = '';
+      selectedVet.value = '';
     }
 
     Get.bottomSheet(
-      Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Text(
-                citaExistente == null ? 'Nueva Cita' : 'Editar Cita',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: primaryBlue,
+      Obx(() {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Text(
+                  appoitment != null ? 'Editar Cita' : 'Nueva Cita',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: primaryBlue,
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
-              _buildTextField(fechaController, 'Fecha (DD-MM-YYYY)', Icons.calendar_today),
-              SizedBox(height: 12),
-              _buildTextField(horaController, 'Hora', Icons.access_time),
-              SizedBox(height: 12),
-              _buildTextField(motivoController, 'Motivo', Icons.description),
-              SizedBox(height: 12),
-              Obx(() {
-                return DropdownButtonFormField<String>(
-                  value: mascotaSeleccionada.value.isEmpty ? null : mascotaSeleccionada.value,
-                  decoration: _dropdownDecoration('Seleccionar Mascota'),
-                  items: controller.mascotas.map((m) {
-                    return DropdownMenuItem(
-                      value: m.id,
-                      child: Text(m.nombre),
-                    );
-                  }).toList(),
-                  onChanged: (value) => mascotaSeleccionada.value = value ?? '',
-                );
-              }),
-              SizedBox(height: 12),
-              Obx(() {
-                return DropdownButtonFormField<String>(
-                  value: veterinarioSeleccionado.value.isEmpty ? null : veterinarioSeleccionado.value,
-                  decoration: _dropdownDecoration('Seleccionar Veterinario'),
-                  items: controller.veterinarios.map((v) {
-                    return DropdownMenuItem(
-                      value: v.id,
-                      child: Text(v.nombre),
-                    );
-                  }).toList(),
-                  onChanged: (value) => veterinarioSeleccionado.value = value ?? '',
-                );
-              }),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: Icon(Icons.check),
-                  label: Text(citaExistente == null ? 'Agregar Cita' : 'Actualizar Cita'),
-                  onPressed: () {
-                    final nuevaCita = Cita(
-                      id: citaExistente?.id ?? uuid.v4(),
-                      fecha: fechaController.text.trim(),
-                      hora: horaController.text.trim(),
-                      motivo: motivoController.text.trim(),
-                      mascotaId: mascotaSeleccionada.value,
-                      veterinarioId: veterinarioSeleccionado.value,
-                    );
-
-                    if (citaExistente == null) {
-                      controller.agregarCita(nuevaCita);
-                    } else {
-                      controller.editarCita(nuevaCita);
-                    }
-
-                    Get.back();
-                  },
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => _openDateTimePicker(context),
+                  icon: const Icon(Icons.calendar_today),
+                  label: Text(selectedDateTime.value == null
+                      ? 'Seleccionar Hora y Fecha'
+                      : DateFormat('dd-MM-yyyy – HH:mm')
+                      .format(selectedDateTime.value!)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryBlue,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                TextField(
+                  controller: reasonController,
+                  decoration: InputDecoration(
+                    labelText: 'Razon',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    prefixIcon: const Icon(Icons.description),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedPet.value.isEmpty ? null : selectedPet.value,
+                  decoration: _dropdownDecoration('Select Pet'),
+                  items: controller.pets.map((m) {
+                    return DropdownMenuItem(
+                      value: m.id,
+                      child: Text(m.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) => selectedPet.value = value ?? '',
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedVet.value.isEmpty ? null : selectedVet.value,
+                  decoration: _dropdownDecoration('Seleccionar Veterinario'),
+                  items: controller.veterinarians.map((v) {
+                    return DropdownMenuItem(
+                      value: v.id,
+                      child: Text(v.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) => selectedVet.value = value ?? '',
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.check),
+                        label: Text(appoitment != null ? 'Actualizar' : 'Agregar'),
+                        onPressed: () {
+                          final errorDate = CitaValidators.validateDateTime(selectedDateTime.value);
+                          final errorReason = CitaValidators.validateText(
+                              reasonController.text, 'Motivo');
+                          final errorPet = CitaValidators.validateSelection(selectedPet.value, 'mascota');
+                          final errorVet = CitaValidators.validateSelection(selectedVet.value, 'veterinario');
+
+                          if (errorDate != null ||
+                              errorReason != null ||
+                              errorPet != null ||
+                              errorVet != null) {
+                            Get.snackbar('Error', 'Completa todos los campos');
+                            return;
+                          }
+
+                          final newAppointment = Appointment(
+                            id: appoitment?.id ?? uuid.v4(),
+                            dateTime: selectedDateTime.value!,
+                            reason: reasonController.text.trim(),
+                            petId: selectedPet.value,
+                            veterinarianId: selectedVet.value,
+                          );
+
+                          if (appoitment == null) {
+                            controller.addAppointment(newAppointment);
+                          } else {
+                            controller.updateAppointment(newAppointment);
+                            editingAppointment.value = null;
+                          }
+
+                          Get.back();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryBlue,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (appoitment != null) ...[
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.cancel),
+                          label: const Text('Cancelar'),
+                          onPressed: () {
+                            editingAppointment.value = null;
+                            Get.back();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade300,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ]
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
       isScrollControlled: true,
+    );
+  }
+
+  void _confirmDeletion(String id) {
+    Get.defaultDialog(
+      title: '¿Eliminar cita?',
+      middleText: 'Esta acción no se puede deshacer',
+      textConfirm: 'Sí, eliminar',
+      textCancel: 'Cancelar',
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.red,
+      onConfirm: () {
+        controller.deleteAppointment(id);
+        if (editingAppointment.value?.id == id) {
+          editingAppointment.value = null;
+          Get.back();
+        }
+        Get.back();
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryBlue = Color(0xFF0D47A1);
-    final lightBlue = Color(0xFF64B5F6);
+    final primaryBlue = const Color(0xFF0D47A1);
+    final lightBlue = const Color(0xFF64B5F6);
 
     return Scaffold(
       body: Container(
@@ -160,52 +264,57 @@ class CitaPage extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.add_circle, color: Colors.white, size: 30),
-                      onPressed: () => mostrarFormulario(),
+                      icon: const Icon(Icons.add_circle, color: Colors.white, size: 30),
+                      onPressed: () => _showForm(context),
                     ),
                   ],
                 ),
               ),
               Expanded(
                 child: Obx(() {
-                  final citas = controller.citas;
+                  final appoitments = controller.appointments;
 
-                  if (citas.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'No hay citas registradas.',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                  if (appoitments.isEmpty) {
+                    return const Center(
+                      child: Text('No hay citas registradas', style: TextStyle(color: Colors.white)),
                     );
                   }
 
                   return ListView.builder(
-                    itemCount: citas.length,
+                    itemCount: appoitments.length,
                     itemBuilder: (context, index) {
-                      final cita = citas[index];
-                      final mascota = controller.mascotas.firstWhereOrNull((m) => m.id == cita.mascotaId);
-                      final veterinario = controller.veterinarios.firstWhereOrNull((v) => v.id == cita.veterinarioId);
+                      final appoitment = appoitments[index];
+                      final pet = controller.pets.firstWhereOrNull((m) => m.id == appoitment.petId);
+                      final vet = controller.veterinarians.firstWhereOrNull((v) => v.id == appoitment.veterinarianId);
 
                       return Card(
-                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: ListTile(
-                          title: Text('${cita.fecha} - ${cita.hora}',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          title: Text(
+                            DateFormat('dd-MM-yyyy – HH:mm').format(appoitment.dateTime),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           subtitle: Text(
-                              '${mascota?.nombre ?? 'Mascota'} con ${veterinario?.nombre ?? 'Veterinario'}\nMotivo: ${cita.motivo}'),
+                            '${pet?.name ?? 'Mascota'} con ${vet?.name ?? 'Veterinario'}\nMotivo: ${appoitment.reason}',
+                          ),
                           isThreeLine: true,
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.edit, color: Colors.orange),
-                                onPressed: () => mostrarFormulario(citaExistente: cita),
+                                icon: const Icon(Icons.edit, color: Colors.orange),
+                                onPressed: () => _showForm(context, appoitment: appoitment),
                               ),
-                              IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => controller.eliminarCita(cita.id),
-                              ),
+                              Obx(() {
+                                final isEditing = editingAppointment.value?.id == appoitment.id;
+                                return IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: isEditing ? null : () => _confirmDeletion(appoitment.id),
+                                );
+                              }),
                             ],
                           ),
                         ),
@@ -225,21 +334,7 @@ class CitaPage extends StatelessWidget {
     return InputDecoration(
       labelText: label,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    );
-  }
-
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        filled: true,
-        fillColor: Colors.grey.shade100,
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     );
   }
 }

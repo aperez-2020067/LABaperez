@@ -1,31 +1,32 @@
-class Mascota {
+class Pet {
   final String id;
-  final String nombre;
-  final String tipo;
-  final String raza;
-  final String clienteId;
+  final String name;
+  final String type;
+  final String breed;
+  final String clientId;
 
-  Mascota({
+  Pet({
     required this.id,
-    required this.nombre,
-    required this.tipo,
-    required this.raza,
-    required this.clienteId,
+    required this.name,
+    required this.type,
+    required this.breed,
+    required this.clientId,
   });
 
-  factory Mascota.fromJson(Map<String, dynamic> json) => Mascota(
+  factory Pet.fromJson(Map<String, dynamic> json) => Pet(
     id: json['id'],
-    nombre: json['nombre'],
-    tipo: json['tipo'],
-    raza: json['raza'],
-    clienteId: json['clienteId'],
+    name: json['nombre'],
+    type: json['tipo'],
+    breed: json['raza'],
+    clientId: json['clienteId'],
   );
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'nombre': nombre,
-    'tipo': tipo,
-    'raza': raza,
-    'clienteId': clienteId,
+    'nombre': name,
+    'tipo': type,
+    'raza': breed,
+    'clienteId': clientId,
   };
 }
+
